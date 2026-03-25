@@ -1,6 +1,7 @@
 import json
 import os
 import urllib.request
+import urllib.error
 from http.server import BaseHTTPRequestHandler
 
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
@@ -82,8 +83,12 @@ def call_groq(statement_text: str, currency: str, goal: str, income) -> dict:
         method="POST",
     )
 
-    with urllib.request.urlopen(req, timeout=60) as resp:
-        data = json.loads(resp.read().decode("utf-8"))
+    try:
+        with urllib.request.urlopen(req, timeout=60) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+    except urllib.error.HTTPError as e:
+        error_body = e.read().decode("utf-8")
+        raise ValueError(f"Groq API error {e.code}: {error_body}")
 
     raw = data["choices"][0]["message"]["content"].strip()
     if raw.startswith("```"):
@@ -124,9 +129,22 @@ class handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         try:
+            # ── Guard: API key must exist ──────────────────────────────
+            if not GROQ_API_KEY:
+                self._send(500, json.dumps({
+                    "detail": "GROQ_API_KEY is not set in environment variables."
+                }))
+                return
+
+            # ── Parse body ─────────────────────────────────────────────
             length = int(self.headers.get("Content-Length", 0))
             raw_body = self.rfile.read(length)
-            body = json.loads(raw_body)
+
+            try:
+                body = json.loads(raw_body)
+            except json.JSONDecodeError:
+                self._send(400, json.dumps({"detail": "Invalid JSON body."}))
+                return
 
             text     = body.get("statement_text", "").strip()
             currency = body.get("currency", "AED")
@@ -137,12 +155,13 @@ class handler(BaseHTTPRequestHandler):
                 self._send(400, json.dumps({"detail": "Statement text too short."}))
                 return
 
-            if not GROQ_API_KEY:
-                self._send(500, json.dumps({"detail": "GROQ_API_KEY environment variable is not set."}))
-                return
-
+            # ── Call Groq ──────────────────────────────────────────────
             result = call_groq(text, currency, goal, income)
             self._send(200, json.dumps(result))
 
+        except ValueError as e:
+            # Groq API errors with full details
+            self._send(502, json.dumps({"detail": str(e)}))
+
         except Exception as e:
-            self._send(500, json.dumps({"detail": str(e)}))
+            self._send(500, json.dumps({"detail": f"{type(e).__name__}: {str(e)}"}))
