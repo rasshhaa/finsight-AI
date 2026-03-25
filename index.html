@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>FinSight AI – Personal Finance Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Epilogue:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg: #f5f2eb;
+  --bg2: #ede9e0;
+  --surface: #ffffff;
+  --border: #ddd8cc;
+  --ink: #1a1714;
+  --ink2: #5c5750;
+  --ink3: #9c9690;
+  --gold: #c9a84c;
+  --gold2: #e8c96e;
+  --green: #2d7a4f;
+  --green2: #e8f5ee;
+  --red: #c0392b;
+  --red2: #fdecea;
+  --blue: #2563aa;
+  --blue2: #e8f0fb;
+  --sans: 'Epilogue', sans-serif;
+  --serif: 'Instrument Serif', serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  min-height: 100vh;
+}
+
+/* Noise texture overlay */
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 0; opacity: 0.4;
+}
+
+.container { max-width: 1080px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+
+/* ── Header ── */
+header {
+  background: var(--ink);
+  padding: 18px 0;
+  position: sticky; top: 0; z-index: 100;
+}
+
+.header-inner { display: flex; align-items: center; justify-content: space-between; }
+
+.logo { display: flex; align-items: center; gap: 14px; }
+
+.logo-mark {
+  width: 38px; height: 38px;
+  background: var(--gold);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+}
+
+.logo-name {
+  font-family: var(--serif);
+  font-size: 22px;
+  color: #fff;
+  letter-spacing: -0.5px;
+}
+
+.logo-name span { color: var(--gold2); }
+
+.header-tag {
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 2px; text-transform: uppercase;
+  color: var(--gold);
+  border: 1px solid rgba(201,168,76,0.4);
+  padding: 5px 12px; border-radius: 20px;
+}
+
+/* ── Hero ── */
+.hero {
+  padding: 64px 0 48px;
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 48px; align-items: center;
+}
+
+.hero-left h1 {
+  font-family: var(--serif);
+  font-size: clamp(40px, 5vw, 62px);
+  line-height: 1.05;
+  letter-spacing: -1px;
+  margin-bottom: 16px;
+}
+
+.hero-left h1 em {
+  font-style: italic;
+  color: var(--gold);
+}
+
+.hero-left p {
+  color: var(--ink2);
+  font-size: 15px;
+  line-height: 1.7;
+  max-width: 400px;
+  font-weight: 300;
+}
+
+.hero-stats {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.hero-stat {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.hero-stat-val {
+  font-family: var(--serif);
+  font-size: 32px;
+  color: var(--gold);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.hero-stat-label {
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 1px; text-transform: uppercase;
+  color: var(--ink3);
+}
+
+/* ── Input card ── */
+.input-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  overflow: hidden;
+  margin-bottom: 32px;
+  box-shadow: 0 4px 24px rgba(26,23,20,0.06);
+}
+
+.card-bar {
+  background: var(--ink);
+  padding: 14px 24px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+
+.card-bar-title {
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 2px; text-transform: uppercase;
+  color: var(--gold);
+}
+
+.win-dots { display: flex; gap: 6px; }
+.wd { width: 10px; height: 10px; border-radius: 50%; }
+.wd-r { background: #ff5f57; }
+.wd-y { background: #ffbd2e; }
+.wd-g { background: #28ca42; }
+
+.input-body { padding: 28px; }
+
+.input-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+
+label {
+  display: block;
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  color: var(--ink3); margin-bottom: 8px;
+}
+
+select, input[type=number] {
+  width: 100%;
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  color: var(--ink);
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-family: var(--sans);
+  font-size: 13px; font-weight: 500;
+  outline: none;
+  transition: border-color 0.2s;
+  appearance: none;
+}
+
+select:focus, input[type=number]:focus { border-color: var(--gold); }
+
+textarea {
+  width: 100%;
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  color: var(--ink);
+  padding: 16px;
+  border-radius: 12px;
+  font-family: 'Courier New', monospace;
+  font-size: 12.5px;
+  line-height: 1.7;
+  resize: vertical;
+  min-height: 200px;
+  outline: none;
+  transition: border-color 0.2s;
+  margin-bottom: 20px;
+}
+
+textarea:focus { border-color: var(--gold); }
+textarea::placeholder { color: var(--ink3); }
+
+.btn-analyse {
+  width: 100%; padding: 16px;
+  background: var(--ink);
+  border: none; border-radius: 12px;
+  color: var(--gold2);
+  font-family: var(--sans);
+  font-size: 15px; font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+}
+
+.btn-analyse:hover { background: #2d2a26; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(26,23,20,0.2); }
+.btn-analyse:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+/* ── Loading ── */
+.loading-wrap {
+  text-align: center; padding: 48px 0;
+}
+
+.loading-ring {
+  width: 56px; height: 56px;
+  border: 3px solid var(--border);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+  margin: 0 auto 20px;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.loading-text {
+  font-size: 13px; font-weight: 500;
+  color: var(--ink2); letter-spacing: 1px;
+}
+
+/* ── Error ── */
+.error-box {
+  background: var(--red2);
+  border: 1px solid rgba(192,57,43,0.2);
+  border-radius: 10px; padding: 16px 20px;
+  font-size: 13px; color: var(--red);
+  margin-bottom: 24px; display: flex; gap: 10px;
+}
+
+/* ── Results ── */
+.results { margin-bottom: 60px; }
+
+/* Health Score Banner */
+.health-banner {
+  border-radius: 20px; padding: 32px 36px;
+  margin-bottom: 24px;
+  display: flex; align-items: center; justify-content: space-between;
+  animation: fadeUp 0.4s ease forwards;
+}
+
+.health-banner.excellent { background: linear-gradient(135deg, #1a3d2b, #2d7a4f); color: #fff; }
+.health-banner.good      { background: linear-gradient(135deg, #1a2d3d, #2563aa); color: #fff; }
+.health-banner.fair      { background: linear-gradient(135deg, #3d2e1a, #c9a84c); color: #fff; }
+.health-banner.poor      { background: linear-gradient(135deg, #3d1a1a, #c0392b); color: #fff; }
+
+.health-label-text {
+  font-family: var(--serif);
+  font-size: clamp(28px, 4vw, 44px);
+  line-height: 1.1; margin-bottom: 8px;
+}
+
+.health-summary { font-size: 14px; opacity: 0.85; max-width: 480px; line-height: 1.6; font-weight: 300; }
+
+.health-score-circle {
+  width: 100px; height: 100px;
+  border: 3px solid rgba(255,255,255,0.3);
+  border-radius: 50%;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+.health-score-num { font-family: var(--serif); font-size: 38px; line-height: 1; }
+.health-score-sub { font-size: 10px; opacity: 0.7; letter-spacing: 1px; }
+
+/* Metrics row */
+.metrics-row {
+  display: grid; grid-template-columns: repeat(3,1fr);
+  gap: 16px; margin-bottom: 24px;
+}
+
+.metric-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px; padding: 22px;
+  animation: fadeUp 0.4s ease forwards;
+}
+
+.metric-icon { font-size: 22px; margin-bottom: 10px; }
+.metric-val {
+  font-family: var(--serif);
+  font-size: 28px; line-height: 1;
+  margin-bottom: 4px;
+}
+
+.metric-val.pos { color: var(--green); }
+.metric-val.neg { color: var(--red); }
+.metric-val.neu { color: var(--gold); }
+
+.metric-label { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--ink3); }
+
+/* Two-col layout */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px; overflow: hidden;
+  animation: fadeUp 0.4s ease forwards;
+}
+
+.panel-head {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+
+.panel-title {
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 2px; text-transform: uppercase;
+  color: var(--ink2);
+}
+
+.panel-body { padding: 20px; }
+
+/* Category bars */
+.cat-row { margin-bottom: 14px; }
+.cat-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+.cat-name { font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+.cat-amount { font-size: 13px; font-weight: 700; color: var(--ink2); font-family: var(--serif); }
+.cat-pct { font-size: 11px; color: var(--ink3); }
+
+.bar-track { background: var(--bg2); border-radius: 4px; height: 6px; overflow: hidden; }
+.bar-fill {
+  height: 100%; border-radius: 4px;
+  background: var(--gold);
+  transition: width 0.8s cubic-bezier(0.4,0,0.2,1);
+}
+.bar-fill.flagged { background: var(--red); }
+
+.flag-tag {
+  font-size: 9px; font-weight: 700;
+  letter-spacing: 1px;
+  background: var(--red2); color: var(--red);
+  padding: 2px 6px; border-radius: 4px;
+}
+
+.trend-up   { color: var(--red); }
+.trend-down { color: var(--green); }
+.trend-stable { color: var(--ink3); }
+
+/* Forecast */
+.forecast-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+.forecast-row:last-child { border-bottom: none; }
+.fc-label { font-size: 13px; font-weight: 600; color: var(--ink2); }
+.fc-val { font-family: var(--serif); font-size: 22px; color: var(--green); }
+.fc-bar-wrap { flex: 1; margin: 0 16px; }
+.fc-bar-track { background: var(--bg2); border-radius: 4px; height: 5px; }
+.fc-bar-fill { background: linear-gradient(90deg, var(--green), #52c78a); height: 100%; border-radius: 4px; transition: width 1s ease; }
+
+/* Recommendations */
+.rec-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 0; overflow: hidden;
+  margin-bottom: 20px;
+  animation: fadeUp 0.4s ease forwards;
+}
+
+.rec-item {
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--border);
+  display: grid; grid-template-columns: auto 1fr auto;
+  gap: 16px; align-items: flex-start;
+}
+.rec-item:last-child { border-bottom: none; }
+
+.rec-priority {
+  width: 8px; height: 8px; border-radius: 50%; margin-top: 5px;
+  flex-shrink: 0;
+}
+.pri-high   { background: var(--red); box-shadow: 0 0 0 3px var(--red2); }
+.pri-medium { background: var(--gold); box-shadow: 0 0 0 3px rgba(201,168,76,0.15); }
+.pri-low    { background: var(--green); box-shadow: 0 0 0 3px var(--green2); }
+
+.rec-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+.rec-detail { font-size: 13px; color: var(--ink2); line-height: 1.5; font-weight: 300; }
+.rec-cat { font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--ink3); margin-top: 4px; }
+
+.rec-saving {
+  text-align: right; flex-shrink: 0;
+}
+.rec-saving-val { font-family: var(--serif); font-size: 18px; color: var(--green); white-space: nowrap; }
+.rec-saving-label { font-size: 10px; color: var(--ink3); letter-spacing: 1px; }
+
+/* Chart container */
+.chart-wrap { position: relative; height: 220px; }
+
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(10px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+.hidden { display: none !important; }
+
+footer {
+  border-top: 1px solid var(--border);
+  padding: 28px 0; text-align: center;
+  font-size: 11px; color: var(--ink3);
+  letter-spacing: 1px; font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  .hero { grid-template-columns: 1fr; }
+  .hero-stats { display: none; }
+  .input-grid { grid-template-columns: 1fr; }
+  .metrics-row { grid-template-columns: 1fr; }
+  .two-col { grid-template-columns: 1fr; }
+  .health-banner { flex-direction: column; gap: 20px; text-align: center; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container header-inner">
+    <div class="logo">
+      <div class="logo-mark">💰</div>
+      <div class="logo-name">Fin<span>Sight</span> AI</div>
+    </div>
+    <span class="header-tag">Personal Finance Intelligence</span>
+  </div>
+</header>
+
+<main class="container">
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-left">
+      <h1>Your money,<br/><em>understood.</em></h1>
+      <p>Paste your bank statement or transaction history. FinSight analyses every line, categorises your spending, forecasts your savings, and delivers advice grounded in your actual data.</p>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="hero-stat-val">AI</div>
+        <div class="hero-stat-label">Powered by Groq LLaMA 3.3</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-val">RAG</div>
+        <div class="hero-stat-label">Data-grounded advice</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-val">12M</div>
+        <div class="hero-stat-label">Savings forecast horizon</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-val">100%</div>
+        <div class="hero-stat-label">Private, not stored</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Input -->
+  <div class="input-card">
+    <div class="card-bar">
+      <span class="card-bar-title">Statement Input</span>
+      <div class="win-dots">
+        <div class="wd wd-r"></div>
+        <div class="wd wd-y"></div>
+        <div class="wd wd-g"></div>
+      </div>
+    </div>
+    <div class="input-body">
+      <div class="input-grid">
+        <div>
+          <label>Currency</label>
+          <select id="currency">
+            <option value="AED">AED – UAE Dirham</option>
+            <option value="USD">USD – US Dollar</option>
+            <option value="EUR">EUR – Euro</option>
+            <option value="GBP">GBP – British Pound</option>
+            <option value="INR">INR – Indian Rupee</option>
+            <option value="SAR">SAR – Saudi Riyal</option>
+          </select>
+        </div>
+        <div>
+          <label>Financial Goal</label>
+          <select id="goal">
+            <option value="general">General Overview</option>
+            <option value="save">Maximise Savings</option>
+            <option value="invest">Free Capital to Invest</option>
+            <option value="debt">Reduce Debt</option>
+          </select>
+        </div>
+        <div>
+          <label>Monthly Income (optional)</label>
+          <input type="number" id="income" placeholder="e.g. 15000" min="0"/>
+        </div>
+      </div>
+
+      <textarea id="statementText" placeholder="Paste your bank statement or transaction history here...
+
+Example:
+01 Jan – Salary Credit +15,000
+03 Jan – Carrefour -320
+05 Jan – DEWA Utility -480
+07 Jan – Noon.com -1,200
+10 Jan – Talabat -85
+12 Jan – Emaar Mall Dining -650
+14 Jan – Netflix -55
+15 Jan – Gym membership -300
+18 Jan – Petrol ADNOC -400
+20 Jan – Amazon -890
+22 Jan – Cafeteria -210
+25 Jan – Rent payment -6,500
+28 Jan – Pharmacare -180
+30 Jan – Cinema -120
+31 Jan – ATM withdrawal -500"></textarea>
+
+      <button class="btn-analyse" id="analyseBtn" onclick="runAnalysis()">
+        ✦ Analyse My Finances
+      </button>
+    </div>
+  </div>
+
+  <!-- Error -->
+  <div id="errorBox" class="error-box hidden">
+    <span>⚠️</span><span id="errorMsg"></span>
+  </div>
+
+  <!-- Loading -->
+  <div id="loadingWrap" class="loading-wrap hidden">
+    <div class="loading-ring"></div>
+    <div class="loading-text" id="loadingText">Reading your transactions...</div>
+  </div>
+
+  <!-- Results -->
+  <div id="results" class="results hidden">
+
+    <!-- Health Banner -->
+    <div class="health-banner" id="healthBanner">
+      <div>
+        <div class="health-label-text" id="healthLabel"></div>
+        <div class="health-summary" id="healthSummary"></div>
+      </div>
+      <div class="health-score-circle">
+        <div class="health-score-num" id="healthScore"></div>
+        <div class="health-score-sub">/ 100</div>
+      </div>
+    </div>
+
+    <!-- Metrics -->
+    <div class="metrics-row">
+      <div class="metric-card">
+        <div class="metric-icon">📥</div>
+        <div class="metric-val neu" id="metricIncome">—</div>
+        <div class="metric-label">Total Income</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-icon">📤</div>
+        <div class="metric-val neg" id="metricExpenses">—</div>
+        <div class="metric-label">Total Expenses</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-icon">💼</div>
+        <div class="metric-val pos" id="metricNet">—</div>
+        <div class="metric-label">Net Cash Flow</div>
+      </div>
+    </div>
+
+    <!-- Spending + Chart -->
+    <div class="two-col">
+      <div class="panel">
+        <div class="panel-head">
+          <span class="panel-title">Spending Breakdown</span>
+          <span id="catCount" style="font-size:12px;color:var(--ink3)"></span>
+        </div>
+        <div class="panel-body" id="categoryList"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <span class="panel-title">Category Distribution</span>
+        </div>
+        <div class="panel-body">
+          <div class="chart-wrap">
+            <canvas id="donutChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Savings Forecast + Bar Chart -->
+    <div class="two-col">
+      <div class="panel">
+        <div class="panel-head">
+          <span class="panel-title">Savings Forecast</span>
+          <span id="savingsRate" style="font-size:12px;color:var(--green);font-weight:700"></span>
+        </div>
+        <div class="panel-body" id="forecastList"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <span class="panel-title">Savings Trajectory</span>
+        </div>
+        <div class="panel-body">
+          <div class="chart-wrap">
+            <canvas id="barChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recommendations -->
+    <div style="margin-bottom:8px">
+      <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--ink3);margin-bottom:16px">
+        ✦ Actionable Recommendations
+      </div>
+    </div>
+    <div class="rec-card" id="recList"></div>
+
+  </div>
+</main>
+
+<footer>
+  <div class="container">
+    FinSight AI v1.0 · FastAPI + Groq LLaMA 3.3 · Built by Rasha Sidique · Your data is never stored
+  </div>
+</footer>
+
+<script>
+const API_BASE = '';
+let donutInstance = null;
+let barInstance   = null;
+
+const loadingMessages = [
+  'Reading your transactions...',
+  'Categorising spending patterns...',
+  'Calculating savings potential...',
+  'Building your forecast...',
+  'Crafting personalised recommendations...',
+  'Finalising your financial report...',
+];
+
+function fmt(n, currency) {
+  return currency + ' ' + Number(n).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+}
+
+function showError(msg) {
+  document.getElementById('errorMsg').textContent = msg;
+  document.getElementById('errorBox').classList.remove('hidden');
+}
+function clearError() { document.getElementById('errorBox').classList.add('hidden'); }
+
+async function runAnalysis() {
+  const text     = document.getElementById('statementText').value.trim();
+  const currency = document.getElementById('currency').value;
+  const goal     = document.getElementById('goal').value;
+  const incomeEl = document.getElementById('income').value;
+
+  if (!text) { showError('Please paste your bank statement or transaction history.'); return; }
+
+  clearError();
+  document.getElementById('analyseBtn').disabled = true;
+  document.getElementById('results').classList.add('hidden');
+  document.getElementById('loadingWrap').classList.remove('hidden');
+
+  let li = 0;
+  const interval = setInterval(() => {
+    li = (li + 1) % loadingMessages.length;
+    document.getElementById('loadingText').textContent = loadingMessages[li];
+  }, 1800);
+
+  try {
+    const body = { statement_text: text, currency, goal };
+    if (incomeEl) body.monthly_income = parseFloat(incomeEl);
+
+    const resp = await fetch(`${API_BASE}/api/analyse`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}));
+      throw new Error(err.detail || `Server error ${resp.status}`);
+    }
+
+    const data = await resp.json();
+    renderResults(data, currency);
+
+  } catch(e) {
+    showError('Request failed: ' + e.message +
+      (e.message.includes('fetch') ? ' — ensure the FastAPI server is running on port 8000.' : ''));
+  } finally {
+    clearInterval(interval);
+    document.getElementById('loadingWrap').classList.add('hidden');
+    document.getElementById('analyseBtn').disabled = false;
+  }
+}
+
+function renderResults(d, currency) {
+  // Health banner
+  const label = (d.health_label || 'Fair').toLowerCase();
+  const banner = document.getElementById('healthBanner');
+  banner.className = 'health-banner ' + label;
+  document.getElementById('healthLabel').textContent = '⬡ ' + d.health_label + ' Financial Health';
+  document.getElementById('healthSummary').textContent = d.summary;
+  document.getElementById('healthScore').textContent = d.health_score;
+
+  // Metrics
+  const nc = d.net_cashflow;
+  document.getElementById('metricIncome').textContent   = fmt(d.total_income, currency);
+  document.getElementById('metricExpenses').textContent = fmt(d.total_expenses, currency);
+  document.getElementById('metricNet').textContent      = fmt(nc, currency);
+  document.getElementById('metricNet').className        = 'metric-val ' + (nc >= 0 ? 'pos' : 'neg');
+
+  // Categories
+  const cats = d.categories || [];
+  document.getElementById('catCount').textContent = cats.length + ' categories';
+  const maxAmt = Math.max(...cats.map(c => c.amount), 1);
+
+  document.getElementById('categoryList').innerHTML = cats.map(c => {
+    const trendIcon = c.trend === 'up' ? '↑' : c.trend === 'down' ? '↓' : '→';
+    const trendClass = c.trend === 'up' ? 'trend-up' : c.trend === 'down' ? 'trend-down' : 'trend-stable';
+    const pct = Math.min((c.amount / maxAmt) * 100, 100);
+    return `
+      <div class="cat-row">
+        <div class="cat-top">
+          <div class="cat-name">
+            ${c.name}
+            ${c.flag ? '<span class="flag-tag">HIGH</span>' : ''}
+            <span class="${trendClass}" style="font-size:12px">${trendIcon}</span>
+          </div>
+          <div>
+            <span class="cat-amount">${fmt(c.amount, currency)}</span>
+            <span class="cat-pct"> · ${c.percentage.toFixed(1)}%</span>
+          </div>
+        </div>
+        <div class="bar-track"><div class="bar-fill ${c.flag ? 'flagged' : ''}" style="width:${pct}%"></div></div>
+      </div>`;
+  }).join('');
+
+  // Donut chart
+  if (donutInstance) donutInstance.destroy();
+  const palette = ['#c9a84c','#2d7a4f','#2563aa','#c0392b','#8e44ad','#16a085','#d35400','#2c3e50','#27ae60','#e74c3c'];
+  const ctx1 = document.getElementById('donutChart').getContext('2d');
+  donutInstance = new Chart(ctx1, {
+    type: 'doughnut',
+    data: {
+      labels: cats.map(c => c.name),
+      datasets: [{
+        data: cats.map(c => c.amount),
+        backgroundColor: cats.map((_, i) => palette[i % palette.length]),
+        borderWidth: 2,
+        borderColor: '#ffffff',
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      cutout: '65%',
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { family: 'Epilogue', size: 11 }, color: '#5c5750', padding: 12, boxWidth: 12 } }
+      }
+    }
+  });
+
+  // Forecast
+  const fc = d.forecast;
+  document.getElementById('savingsRate').textContent = fc.savings_rate_pct.toFixed(1) + '% savings rate';
+  const maxFc = Math.max(fc.projected_3m, fc.projected_6m, fc.projected_12m, 1);
+
+  document.getElementById('forecastList').innerHTML = [
+    { label: 'Monthly', val: fc.current_monthly_savings, pct: (fc.current_monthly_savings / maxFc) * 100 },
+    { label: '3 Months', val: fc.projected_3m, pct: (fc.projected_3m / maxFc) * 100 },
+    { label: '6 Months', val: fc.projected_6m, pct: (fc.projected_6m / maxFc) * 100 },
+    { label: '12 Months', val: fc.projected_12m, pct: (fc.projected_12m / maxFc) * 100 },
+  ].map(f => `
+    <div class="forecast-row">
+      <div class="fc-label">${f.label}</div>
+      <div class="fc-bar-wrap"><div class="fc-bar-track"><div class="fc-bar-fill" style="width:${Math.max(f.pct,2)}%"></div></div></div>
+      <div class="fc-val">${fmt(f.val, currency)}</div>
+    </div>`).join('');
+
+  // Bar chart
+  if (barInstance) barInstance.destroy();
+  const ctx2 = document.getElementById('barChart').getContext('2d');
+  barInstance = new Chart(ctx2, {
+    type: 'bar',
+    data: {
+      labels: ['Monthly', '3M', '6M', '12M'],
+      datasets: [{
+        label: 'Projected Savings',
+        data: [fc.current_monthly_savings, fc.projected_3m, fc.projected_6m, fc.projected_12m],
+        backgroundColor: ['rgba(201,168,76,0.7)','rgba(45,122,79,0.5)','rgba(45,122,79,0.7)','rgba(45,122,79,0.9)'],
+        borderRadius: 8, borderSkipped: false,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { family: 'Epilogue', size: 11 }, color: '#9c9690' } },
+        y: { grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { font: { family: 'Epilogue', size: 11 }, color: '#9c9690',
+          callback: v => currency + ' ' + (v >= 1000 ? (v/1000).toFixed(0)+'k' : v) } }
+      }
+    }
+  });
+
+  // Recommendations
+  const recs = d.recommendations || [];
+  document.getElementById('recList').innerHTML = recs.map((r, i) => `
+    <div class="rec-item" style="animation-delay:${i*0.07}s">
+      <div class="rec-priority pri-${r.priority}"></div>
+      <div>
+        <div class="rec-title">${r.title}</div>
+        <div class="rec-detail">${r.detail}</div>
+        <div class="rec-cat">${r.category} · ${r.priority} priority</div>
+      </div>
+      ${r.potential_saving ? `
+      <div class="rec-saving">
+        <div class="rec-saving-val">+${fmt(r.potential_saving, currency)}</div>
+        <div class="rec-saving-label">potential save</div>
+      </div>` : '<div></div>'}
+    </div>`).join('');
+
+  document.getElementById('results').classList.remove('hidden');
+  document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+</script>
+</body>
+</html>
