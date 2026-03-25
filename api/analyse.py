@@ -1,6 +1,7 @@
 import json
 import os
 import urllib.request
+from http.server import BaseHTTPRequestHandler
 
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
 GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
@@ -99,36 +100,49 @@ def call_groq(statement_text: str, currency: str, goal: str, income) -> dict:
         raise ValueError("AI returned unparseable response")
 
 
-CORS = {
-    "Access-Control-Allow-Origin":  "*",
-    "Access-Control-Allow-Methods": "POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type",
-    "Content-Type": "application/json",
-}
+CORS_HEADERS = [
+    ("Access-Control-Allow-Origin",  "*"),
+    ("Access-Control-Allow-Methods", "POST, OPTIONS"),
+    ("Access-Control-Allow-Headers", "Content-Type"),
+    ("Content-Type", "application/json"),
+]
 
 
-def handler(request):
-    if request.method == "OPTIONS":
-        return Response("", 200, CORS)
+class handler(BaseHTTPRequestHandler):
 
-    if request.method != "POST":
-        return Response(json.dumps({"detail": "Method not allowed"}), 405, CORS)
+    def _send(self, status: int, body: str):
+        encoded = body.encode("utf-8")
+        self.send_response(status)
+        for k, v in CORS_HEADERS:
+            self.send_header(k, v)
+        self.send_header("Content-Length", str(len(encoded)))
+        self.end_headers()
+        self.wfile.write(encoded)
 
-    try:
-        body     = request.json()
-        text     = body.get("statement_text", "").strip()
-        currency = body.get("currency", "AED")
-        goal     = body.get("goal", "general")
-        income   = body.get("monthly_income")
+    def do_OPTIONS(self):
+        self._send(200, "")
 
-        if len(text) < 30:
-            return Response(json.dumps({"detail": "Statement text too short."}), 400, CORS)
+    def do_POST(self):
+        try:
+            length = int(self.headers.get("Content-Length", 0))
+            raw_body = self.rfile.read(length)
+            body = json.loads(raw_body)
 
-        result = call_groq(text, currency, goal, income)
-        return Response(json.dumps(result), 200, CORS)
+            text     = body.get("statement_text", "").strip()
+            currency = body.get("currency", "AED")
+            goal     = body.get("goal", "general")
+            income   = body.get("monthly_income")
 
-    except Exception as e:
-        return Response(json.dumps({"detail": str(e)}), 500, CORS)
+            if len(text) < 30:
+                self._send(400, json.dumps({"detail": "Statement text too short."}))
+                return
 
+            if not GROQ_API_KEY:
+                self._send(500, json.dumps({"detail": "GROQ_API_KEY environment variable is not set."}))
+                return
 
-from vercel_runtime import Response
+            result = call_groq(text, currency, goal, income)
+            self._send(200, json.dumps(result))
+
+        except Exception as e:
+            self._send(500, json.dumps({"detail": str(e)}))
